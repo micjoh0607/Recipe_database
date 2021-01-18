@@ -1,0 +1,38 @@
+import sqlite3 as sql
+
+connection = sql.connect('recipefour.db')
+
+connection.execute('''PRAGMA foreign_keys = 1''')
+
+c = connection.cursor()
+
+def Initialise():
+    try:
+        c.execute('''DROP TABLE recipe_ingredients''')
+        c.execute('''DROP TABLE recipe_instructions''')
+        c.execute('''DROP TABLE instructions''')
+        c.execute('''DROP TABLE ingredients''')
+        c.execute('''DROP TABLE recipes''')
+    except:
+        pass
+
+    #creating the database tables
+    try:
+        c.execute('''CREATE TABLE recipes (recipe_id integer PRIMARY KEY, recipe_name text, recipes_blank text) ''')
+        c.execute('''CREATE TABLE instructions (instruction_id integer PRIMARY KEY, instruction_text text, 
+                     instructions_blank text)''')
+        c.execute('''CREATE TABLE ingredients (ingredient_id integer PRIMARY KEY, ingredient_name text, ingredient_quantity 
+                     integer, ingredient_unit text, ingredient_increment integer, max_val integer, min_val integer, 
+                     ingredients_blank text) ''')
+        c.execute('''CREATE TABLE recipe_instructions (recipe_instruction_id integer PRIMARY KEY, recipe_id integer 
+                     references recipes(recipe_id) on update cascade on delete cascade, instruction_id integer references 
+                     instructions(instruction_id) on update cascade on delete cascade , ordernum integer, 
+                     recipe_instructions_blank text)''')
+        c.execute('''CREATE TABLE recipe_ingredients (recipe_ingredient_id integer PRIMARY KEY, recipe_id integer 
+                     references recipes(recipe_id) on update cascade on delete cascade, ingredient_id integer references 
+                     ingredients(ingredient_id) on update cascade on delete cascade, quantitynum integer, 
+                     recipe_ingredients_blank text)''')
+
+    except:
+        pass
+
