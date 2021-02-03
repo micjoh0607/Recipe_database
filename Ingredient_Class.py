@@ -41,13 +41,19 @@ class ingredient():
                      SET ingredient_name = ?
                      WHERE ingredient_name = ?''',(new_name, self.ingredient_name))
         self.ingredient_name = new_name
-    def update_quantity(self, final_value):
+    def change_quantity(self, final_value):
         c.execute('''UPDATE ingredients 
                      SET ingredient_quantity = ? 
                      WHERE ingredient_name = ?''',(final_value,self.ingredient_name))
         connection.commit()
         self.ingredient_quantity = final_value
         return int(self.ingredient_quantity)
+
+    def increment_quantity(self, value):
+        c.execute('''UPDATE ingredients
+                     SET ingredient_quantity = ?
+                     WHERE ingredient_name = ?''', (self.ingredient_quantity + value, self.ingredient_name))
+        connection.commit()
 
     def update_unit(self, new_unit):
         c.execute('''UPDATE ingredients 

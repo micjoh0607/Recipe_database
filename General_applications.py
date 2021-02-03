@@ -1,6 +1,7 @@
 import sqlite3 as sql
 connection = sql.connect('recipefour.db')
 c = connection.cursor()
+import datetime
 
 class general():
     def __init__(self):
@@ -68,14 +69,48 @@ class general():
                       FROM ingredients
                       WHERE ingredient_name = ?''', (name,))
         return c.fetchall()
+
     def check_instruction_id(self, name):
         c.execute('''SELECT instruction_id
                      FROM instructions
                      WHERE instruction_text = ?''', (name,))
         return c.fetchall()
 
+    def check_shopping_list(self):
+        c.execute('''SELECT shopping_list_id
+                     FROM shopping_list
+                     WHERE status == ?''', ("incomplete",))
+        return c.fetchall()
 
+    def shopping_list_items(self):
+        c.execute('''SELECT ingredient_name, quantity, list_items_blank
+                     FROM list_items
+                     WHERE shopping_list_id = ? ''', (self.check_shopping_list()[0][0],))
+        return c.fetchall()
+        
+    def create_shopping_list(self):
+        c.execute('''INSERT 
+                     INTO shopping_list (start_date, end_date, status, shopping_list_blank)
+                     VALUES(?, ?, ?, ?)''', (datetime.datetime.now().strftime("%x"), "", "incomplete", ""))
+        connection.commit()
 
+    def add_to_list(self, name, quantity):
+        c.execute('''INSERT
+                     INTO list_items (shopping_list_id, ingredient_name, quantity, list_items_blank)
+                     VALUES(?,?,?,?)''', (self.check_shopping_list()[0][0], name, quantity, ""))
+        connection.commit()
 
+    def list_delete(self, name):
+        c.execute('''DELETE 
+                     FROM list_items
+                     WHERE ingredient_name = ?''', (name, ))
+        connection.commit()
+
+    def complete_list(self):
+        c.execute('''UPDATE shopping_list
+                     SET status = ?
+                     AND end_date = ?
+                     WHERE status = ?''', ("complete", datetime.datetime.now().strftime("%x"), "incomplete"))
+        connection.commit()
 
 

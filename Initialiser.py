@@ -13,6 +13,8 @@ def Initialise():
         c.execute('''DROP TABLE instructions''')
         c.execute('''DROP TABLE ingredients''')
         c.execute('''DROP TABLE recipes''')
+        c.execute('''DROP TABLE shopping_list''')
+        c.execute('''DROP TABLE list_items''')
     except:
         pass
 
@@ -32,6 +34,10 @@ def Initialise():
                      references recipes(recipe_id) on update cascade on delete cascade, ingredient_id integer references 
                      ingredients(ingredient_id) on update cascade on delete cascade, quantitynum integer, 
                      recipe_ingredients_blank text)''')
+        c.execute('''CREATE TABLE shopping_list (shopping_list_id integer PRIMARY KEY, start_date text, end_date text, status text, shopping_list_blank text)''')
+        c.execute('''CREATE TABLE list_items (list_item_id integer PRIMARY KEY, shopping_list_id integer, ingredient_name integer, quantity integer, list_items_blank text)''')
+
+
 
     except:
         pass
