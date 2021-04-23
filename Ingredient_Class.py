@@ -1,7 +1,9 @@
 import sqlite3 as sql
+import math
 
 connection = sql.connect('recipefour.db')
 c = connection.cursor()
+
 
 class ingredient():
     def __init__(self, new_ingredient_name, type):
@@ -47,7 +49,7 @@ class ingredient():
                      WHERE ingredient_name = ?''',(final_value,self.ingredient_name))
         connection.commit()
         self.ingredient_quantity = final_value
-        return int(self.ingredient_quantity)
+        return float(self.ingredient_quantity)
 
     def increment_quantity(self, value):
         c.execute('''UPDATE ingredients
@@ -71,7 +73,7 @@ class ingredient():
         return self.ingredient_name
 
     def output_quantity(self):
-        return int(self.ingredient_quantity)
+        return self.ingredient_quantity
 
     def output_id(self):
         return str(self.ingredient_id)
@@ -94,7 +96,11 @@ class ingredient():
                      where recipes.recipe_id = recipe_ingredients.recipe_id 
                      and recipe_ingredients.ingredient_id = ingredients.ingredient_id 
                      and ingredients.ingredient_name = ?''',(word,))
-        return c.fetchall()
+        test = c.fetchall()
+        print("success")
+        print(test)
+        return test
+
 
 
 

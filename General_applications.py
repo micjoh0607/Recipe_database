@@ -8,19 +8,24 @@ class general():
         pass
     def general_names(self, word, type):
         if type == "Ingredients":
-            c.execute('''SELECT ingredient_name, ingredients_blank, ingredients_blank
+            c.execute('''SELECT ingredient_name, ingredient_quantity, ingredients_blank
                          from ingredients 
                          where ingredient_name 
                          like "{}%"'''.format(word))
             mylist = c.fetchall()
             return mylist
         else:
-            c.execute('''SELECT recipe_name , recipes_blank, recipes_blank
+            c.execute('''SELECT recipe_name , serving_size, recipes_blank
                          from recipes
                          where recipe_name 
                          like "{}%"'''.format(word))
             mylist = c.fetchall()
             return mylist
+
+    def format_general_names(self, word, type):
+        old_list = self.general_names(word, type)
+        new_list = [old_list[i][0] for i in range(len(old_list))]
+        return new_list
 
     def check_duplicate(self, word, type):
         status = "unique"

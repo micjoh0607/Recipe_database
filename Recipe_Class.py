@@ -1,19 +1,23 @@
 import sqlite3 as sql
 from General_applications import general
 from Ingredient_Class import ingredient
+import math
 
 connection = sql.connect('recipefour.db')
 c = connection.cursor()
+
 
 class recipe():
     def __init__(self, new_recipe_name, type):
         self.data = general()
         if type == "current":
-            c.execute('''SELECT recipe_id
+            c.execute('''SELECT recipe_id, serving_size
                          from recipes
                          where recipe_name = ?''', (new_recipe_name,))
-            self.recipe_id = (c.fetchall())[0][0]
+            result = c.fetchall()
+            self.recipe_id = result[0][0]
             self.recipe_name = new_recipe_name
+            self.serving_size = result[0][1]
 
             c.execute('''select instruction_text, ordernum
                          from recipes, recipe_instructions, instructions
@@ -63,12 +67,17 @@ class recipe():
         c.execute('''DELETE FROM recipe_instructions where recipe_id = ?''', (self.recipe_id,))
         connection.commit()
 
+    def output_serving_size(self):
+        return str(self.serving_size)
 
     def output_id(self):
         return str(self.recipe_id)
 
     def output_name(self):
         return str(self.recipe_name)
+
+    def update_serving_size(self, value):
+        c.execute('''UPDATE recipes set serving_size = ? where recipe_name = ?''', (value, self.recipe_name))
 
     def update_max(self, value, ingredient):
         c.execute('''UPDATE ingredients set max_val = ? where ingredient_name = ?''', (value, ingredient))
@@ -96,14 +105,17 @@ class recipe():
                      WHERE recipe_id = ?
                      AND ingredient_id = ?''', (self.recipe_id, self.data.check_ingredient_id(ingredient_name)[0][0]))
         connection.commit()
+
     def remove_instruction(self, instruction_name):
         c.execute('''DELETE from recipe_instructions
                      WHERE recipe_id = ?
-                     AND instruction_id = ?''', (self.recipe_id, self.data.check_instruction_id(instruction_name)[0][0]))
+                     AND instruction_id = ?''',
+                  (self.recipe_id, self.data.check_instruction_id(instruction_name)[0][0]))
         connection.commit()
 
-    def new_recipe(self, name, instructions, ingredients, quantity):
-        c.execute('''INSERT INTO recipes (recipe_name, recipes_blank) VALUES(?,?)''', (name, " "))
+    def new_recipe(self, name, instructions, ingredients, quantity, serving):
+        c.execute('''INSERT INTO recipes (recipe_name, serving_size, recipes_blank) VALUES(?,?,?)''',
+                  (name, serving, " "))
         connection.commit()
         c.execute('''select recipe_id from recipes where recipe_name = ?''', (name,))
         self.recipe_id = c.fetchall()[0][0]
@@ -116,16 +128,17 @@ class recipe():
                          from instructions 
                          where instruction_text = ?''', (instructions[i][0],))
             instruction_id = c.fetchall()[0][0]
-            c.execute('''INSERT INTO recipe_instructions (recipe_id, instruction_id, ordernum, recipe_instructions_blank) VALUES(?,?,?,?)''',
+            c.execute(
+                '''INSERT INTO recipe_instructions (recipe_id, instruction_id, ordernum, recipe_instructions_blank) VALUES(?,?,?,?)''',
                 (self.recipe_id, instruction_id, str((int(i + 1))) + ".", " "))
             connection.commit()
         for i in range(len(ingredients)):
-            c.execute('''select ingredient_id from ingredients where ingredient_name  = ?''',(ingredients[i][0],))
+            c.execute('''select ingredient_id from ingredients where ingredient_name  = ?''', (ingredients[i][0],))
             ingredient_id = c.fetchall()[0][0]
-            c.execute('''INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantitynum, recipe_ingredients_blank) VALUES (?,?,?,?)''',
+            c.execute(
+                '''INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantitynum, recipe_ingredients_blank) VALUES (?,?,?,?)''',
                 (self.recipe_id, ingredient_id, quantity[i][1], " "))
             connection.commit()
-
 
             if int(self.data.check_max(ingredients[i][0])) < int(quantity[i][1]):
                 self.update_max(quantity[i][1], ingredients[i][0])
@@ -148,16 +161,7 @@ class recipe():
             for i in lst:
                 format_lst = [i[0]]
                 format_lst[0] = ingredient(format_lst[0], "existing")
-                format_lst[0].update_quantity(format_lst[0].output_quantity() - i[1])
+                format_lst[0].change_quantity(format_lst[0].output_quantity() - i[1])
+            return True
         if not flag:
-            print("failure")
-
-
-
-
-
-
-
-
-
-
+            return False
